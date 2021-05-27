@@ -30,7 +30,9 @@ jobs:
             dep ensure
         fi
     - name: Build
-      run: go build -v .
+      run: |
+        - go build -v -o cmd/juno-admin/ cmd/juno-admin/*.go
+        - go build -v -o cmd/juno-proxy/ cmd/juno-proxy/*.go
 
     - name: Test
       run: go test -v ./... -coverprofile coverage.out -covermode=atomic
