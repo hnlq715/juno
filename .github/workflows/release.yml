@@ -47,3 +47,8 @@ jobs:
             name: 'juno-worker'
             compress: 'true'
             dest: 'dist'
+      - name: upload release-artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: my-artifact
+          path: dist
