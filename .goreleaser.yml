@@ -1,4 +1,4 @@
-project_name: gh
+project_name: juno
 
 builds:
 - main: ./cmd/juno-admin
