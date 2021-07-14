@@ -18,8 +18,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/douyu/juno/api/apiv1/provider"
-
 	"github.com/douyu/juno/api/apiv1/analysis"
 	"github.com/douyu/juno/api/apiv1/confgo"
 	"github.com/douyu/juno/api/apiv1/confgov2"
@@ -32,13 +30,14 @@ import (
 	"github.com/douyu/juno/api/apiv1/openauth"
 	"github.com/douyu/juno/api/apiv1/permission"
 	pprofHandle "github.com/douyu/juno/api/apiv1/pprof"
+	"github.com/douyu/juno/api/apiv1/provider"
 	"github.com/douyu/juno/api/apiv1/resource"
-	"github.com/douyu/juno/api/apiv1/static"
 	"github.com/douyu/juno/api/apiv1/system"
 	"github.com/douyu/juno/api/apiv1/test/grpc"
 	http2 "github.com/douyu/juno/api/apiv1/test/http"
 	"github.com/douyu/juno/api/apiv1/test/platform"
 	"github.com/douyu/juno/api/apiv1/user"
+	"github.com/douyu/juno/assets"
 	"github.com/douyu/juno/internal/app/core"
 	"github.com/douyu/juno/internal/app/middleware"
 	"github.com/douyu/juno/internal/pkg/service/casbin"
@@ -83,8 +82,10 @@ func apiAdmin(server *xecho.Server) {
 		panic("assets/dist not exist")
 	}
 
-	server.GET("/", static.File("assets/dist/index.html"), sessionMW, loginAuthRedirect)
-	server.Static("/ant/*", "assets/dist")
+	assetsHandler := http.FileServer(http.FS(assets.Assets()))
+
+	server.GET("/", echo.WrapHandler(assetsHandler), sessionMW, loginAuthRedirect)
+	server.GET("/ant/*", echo.WrapHandler(assetsHandler))
 	server.Static("/pprof/*", cfg.Cfg.Pprof.StorePath)
 
 	echo.NotFoundHandler = func(c echo.Context) error {
