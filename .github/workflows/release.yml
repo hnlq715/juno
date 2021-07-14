@@ -1,0 +1,49 @@
+# workflow name
+name: Generate release-artifacts
+
+# on events
+on:
+  release:
+    types: 
+        - created
+
+# workflow tasks
+jobs:
+  generate:
+    name: Generate cross-platform builds
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+      - name: juno-admin
+        uses: thatisuday/go-cross-build@v1
+        with:
+            platforms: 'linux/amd64, darwin/amd64, windows/amd64'
+            package: 'cmd/juno-admin'
+            name: 'juno-admin'
+            compress: 'true'
+            dest: 'dist'
+      - name: juno-proxy
+        uses: thatisuday/go-cross-build@v1
+        with:
+            platforms: 'linux/amd64, darwin/amd64, windows/amd64'
+            package: 'cmd/juno-proxy'
+            name: 'juno-proxy'
+            compress: 'true'
+            dest: 'dist'
+      - name: juno-swagger
+        uses: thatisuday/go-cross-build@v1
+        with:
+            platforms: 'linux/amd64, darwin/amd64, windows/amd64'
+            package: 'cmd/juno-swagger'
+            name: 'juno-swagger'
+            compress: 'true'
+            dest: 'dist'
+      - name: juno-worker
+        uses: thatisuday/go-cross-build@v1
+        with:
+            platforms: 'linux/amd64, darwin/amd64, windows/amd64'
+            package: 'cmd/juno-worker'
+            name: 'juno-worker'
+            compress: 'true'
+            dest: 'dist'
