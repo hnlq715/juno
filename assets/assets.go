@@ -2,7 +2,7 @@ package assets
 
 import "embed"
 
-//go:embed dist/*
+//go:embed dist
 
 var assets embed.FS
 
