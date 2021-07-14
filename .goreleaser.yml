@@ -8,6 +8,7 @@ builds:
     - linux
     - darwin
     - windows
+  goarch: [amd64]
 - main: ./cmd/juno-proxy
   id: "juno-proxy"
   binary: juno-proxy
@@ -15,6 +16,7 @@ builds:
     - linux
     - darwin
     - windows
+  goarch: [amd64]
 - main: ./cmd/juno-swagger
   id: "juno-swagger"
   binary: juno-swagger
@@ -22,6 +24,7 @@ builds:
     - linux
     - darwin
     - windows
+  goarch: [amd64]
 - main: ./cmd/juno-worker
   id: "juno-worker"
   binary: juno-worker
@@ -29,3 +32,4 @@ builds:
     - linux
     - darwin
     - windows
+  goarch: [amd64]
