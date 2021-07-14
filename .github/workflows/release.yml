@@ -1,56 +1,26 @@
-# workflow name
-name: Generate release-artifacts with tag
+name: goreleaser
 
-# on events
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v**"
 
-# workflow tasks
 jobs:
-  generate:
-    name: Generate cross-platform builds
+  goreleaser:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the repository
+      - name: Checkout
         uses: actions/checkout@v2
-      - name: juno-admin
-        uses: thatisuday/go-cross-build@v1
+      - name: Set up Go 1.16
+        uses: actions/setup-go@v2
         with:
-            platforms: 'linux/amd64, darwin/amd64, windows/amd64'
-            package: 'cmd/juno-admin'
-            name: 'juno-admin'
-            compress: 'true'
-            dest: 'dist'
-      - name: juno-proxy
-        uses: thatisuday/go-cross-build@v1
+          go-version: 1.16
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
         with:
-            platforms: 'linux/amd64, darwin/amd64, windows/amd64'
-            package: 'cmd/juno-proxy'
-            name: 'juno-proxy'
-            compress: 'true'
-            dest: 'dist'
-      - name: juno-swagger
-        uses: thatisuday/go-cross-build@v1
-        with:
-            platforms: 'linux/amd64, darwin/amd64, windows/amd64'
-            package: 'cmd/juno-swagger'
-            name: 'juno-swagger'
-            compress: 'true'
-            dest: 'dist'
-      - name: juno-worker
-        uses: thatisuday/go-cross-build@v1
-        with:
-            platforms: 'linux/amd64, darwin/amd64, windows/amd64'
-            package: 'cmd/juno-worker'
-            name: 'juno-worker'
-            compress: 'true'
-            dest: 'dist'
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: dist/*
+          # either 'goreleaser' (default) or 'goreleaser-pro'
+          distribution: goreleaser
+          version: latest
+          args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
