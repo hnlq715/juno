@@ -1,11 +1,11 @@
 # workflow name
-name: Generate release-artifacts
+name: Generate release-artifacts with tag
 
 # on events
 on:
-  release:
-    types: 
-        - created
+  push:
+    tags:
+      - 'v*.*.*'
 
 # workflow tasks
 jobs:
@@ -47,8 +47,10 @@ jobs:
             name: 'juno-worker'
             compress: 'true'
             dest: 'dist'
-      - name: upload release-artifacts
-        uses: actions/upload-artifact@v2
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: my-artifact
-          path: dist
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
