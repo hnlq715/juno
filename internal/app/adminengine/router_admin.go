@@ -15,6 +15,7 @@
 package adminengine
 
 import (
+	"io/fs"
 	"net/http"
 	"strings"
 
@@ -45,7 +46,6 @@ import (
 	userSrv "github.com/douyu/juno/internal/pkg/service/user"
 	"github.com/douyu/juno/pkg/cfg"
 	"github.com/douyu/juno/pkg/model/db"
-	"github.com/douyu/juno/pkg/util"
 	"github.com/douyu/jupiter/pkg/server/xecho"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
@@ -77,15 +77,20 @@ func apiAdmin(server *xecho.Server) {
 	}
 
 	// static file
-	flag, err := util.IsFileExists("assets/dist")
-	if err != nil || !flag {
-		panic("assets/dist not exist")
+	_, err := assets.Assets().Open("dist/index.html")
+	if err != nil {
+		panic("dist/index.html not exist, " + err.Error())
 	}
 
-	assetsHandler := http.FileServer(http.FS(assets.Assets()))
+	dist, err := fs.Sub(assets.Assets(), "dist")
+	if err != nil {
+		panic("dist not exist, " + err.Error())
+	}
+
+	assetsHandler := http.FileServer(http.FS(dist))
 
 	server.GET("/", echo.WrapHandler(assetsHandler), sessionMW, loginAuthRedirect)
-	server.GET("/ant/*", echo.WrapHandler(assetsHandler))
+	server.GET("/ant/*", echo.WrapHandler(http.StripPrefix("/ant/", assetsHandler)))
 	server.Static("/pprof/*", cfg.Cfg.Pprof.StorePath)
 
 	echo.NotFoundHandler = func(c echo.Context) error {
