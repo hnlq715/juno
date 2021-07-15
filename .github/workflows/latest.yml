@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - github-action-go
 
 jobs:
   goreleaser:
@@ -11,10 +12,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: npm-
       - name: npm build dist
         run: |
           cd assets
-          npm install
+          npm ci --ignore-scripts
           npm run build
       - name: Set up Go 1.16
         uses: actions/setup-go@v2
