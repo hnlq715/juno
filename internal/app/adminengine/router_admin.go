@@ -15,10 +15,9 @@
 package adminengine
 
 import (
+	"io/fs"
 	"net/http"
 	"strings"
-
-	"github.com/douyu/juno/api/apiv1/provider"
 
 	"github.com/douyu/juno/api/apiv1/analysis"
 	"github.com/douyu/juno/api/apiv1/confgo"
@@ -32,13 +31,14 @@ import (
 	"github.com/douyu/juno/api/apiv1/openauth"
 	"github.com/douyu/juno/api/apiv1/permission"
 	pprofHandle "github.com/douyu/juno/api/apiv1/pprof"
+	"github.com/douyu/juno/api/apiv1/provider"
 	"github.com/douyu/juno/api/apiv1/resource"
-	"github.com/douyu/juno/api/apiv1/static"
 	"github.com/douyu/juno/api/apiv1/system"
 	"github.com/douyu/juno/api/apiv1/test/grpc"
 	http2 "github.com/douyu/juno/api/apiv1/test/http"
 	"github.com/douyu/juno/api/apiv1/test/platform"
 	"github.com/douyu/juno/api/apiv1/user"
+	"github.com/douyu/juno/assets"
 	"github.com/douyu/juno/internal/app/core"
 	"github.com/douyu/juno/internal/app/middleware"
 	"github.com/douyu/juno/internal/pkg/service/casbin"
@@ -46,7 +46,6 @@ import (
 	userSrv "github.com/douyu/juno/internal/pkg/service/user"
 	"github.com/douyu/juno/pkg/cfg"
 	"github.com/douyu/juno/pkg/model/db"
-	"github.com/douyu/juno/pkg/util"
 	"github.com/douyu/jupiter/pkg/server/xecho"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
@@ -78,13 +77,20 @@ func apiAdmin(server *xecho.Server) {
 	}
 
 	// static file
-	flag, err := util.IsFileExists("assets/dist")
-	if err != nil || !flag {
-		panic("assets/dist not exist")
+	_, err := assets.Assets().Open("dist/index.html")
+	if err != nil {
+		panic("dist/index.html not exist, " + err.Error())
 	}
 
-	server.GET("/", static.File("assets/dist/index.html"), sessionMW, loginAuthRedirect)
-	server.Static("/ant/*", "assets/dist")
+	dist, err := fs.Sub(assets.Assets(), "dist")
+	if err != nil {
+		panic("dist not exist, " + err.Error())
+	}
+
+	assetsHandler := http.FileServer(http.FS(dist))
+
+	server.GET("/", echo.WrapHandler(assetsHandler), sessionMW, loginAuthRedirect)
+	server.GET("/ant/*", echo.WrapHandler(http.StripPrefix("/ant/", assetsHandler)))
 	server.Static("/pprof/*", cfg.Cfg.Pprof.StorePath)
 
 	echo.NotFoundHandler = func(c echo.Context) error {
