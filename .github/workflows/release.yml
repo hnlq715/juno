@@ -15,7 +15,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.npm
-          key: npm-${{ hashFiles('package-lock.json') }}
+          key: npm-${{ hashFiles('assets/package-lock.json') }}
           restore-keys: npm-
       - name: npm build dist
         run: |
@@ -26,12 +26,20 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.16
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
           # either 'goreleaser' (default) or 'goreleaser-pro'
           distribution: goreleaser
           version: latest
-          args: release --rm-dist
+          args: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
